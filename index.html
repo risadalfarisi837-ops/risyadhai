@@ -2,346 +2,540 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Risyadh AI - Image Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Risyadh.ai - Realtime Generation</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- MODERN AI THEME --- */
+        /* --- KREA.AI MOBILE THEME --- */
         :root {
-            --bg-color: #0f172a;       /* Deep Slate/Dark Navy */
-            --surface-color: #1e293b;  /* Lighter Slate */
-            --accent-glow: #8b5cf6;    /* Soft Purple */
-            --accent-blue: #3b82f6;    /* Soft Blue */
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --radius-lg: 24px;
-            --radius-md: 16px;
+            --bg-base: #000000;
+            --bg-panel: #0f0f0f;
+            --bg-input: #1a1a1a;
+            --border-color: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --accent-white: #ffffff;
+            --accent-dark: #111111;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            height: 100vh;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            background-image: radial-gradient(circle at top center, rgba(139, 92, 246, 0.15), transparent 50%);
-        }
-
-        /* --- NAVBAR --- */
-        .navbar {
-            width: 100%;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(90deg, #a855f7, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        /* --- MAIN CONTAINER --- */
-        .container {
-            max-width: 800px;
-            width: 100%;
-            padding: 40px 20px;
-            text-align: center;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .header-text { margin-bottom: 40px; }
-        .header-text h1 { font-size: 3rem; font-weight: 800; margin-bottom: 15px; letter-spacing: -1px; }
-        .header-text p { font-size: 1.1rem; color: var(--text-muted); font-weight: 300; }
-
-        /* --- PROMPT BAR --- */
-        .prompt-box {
-            background: var(--surface-color);
-            padding: 8px;
-            border-radius: var(--radius-lg);
-            display: flex;
-            align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: 0.3s;
-            margin-bottom: 40px;
-        }
-        
-        .prompt-box:focus-within {
-            border-color: rgba(139, 92, 246, 0.5);
-            box-shadow: 0 0 25px rgba(139, 92, 246, 0.2);
-        }
-
-        .prompt-input {
-            flex: 1;
-            background: transparent;
-            border: none;
-            padding: 15px 20px;
-            color: var(--text-main);
-            font-size: 1.1rem;
-            outline: none;
-            font-family: 'Inter', sans-serif;
-        }
-        
-        .prompt-input::placeholder { color: #64748b; }
-
-        .generate-btn {
-            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .generate-btn:hover { opacity: 0.9; transform: scale(0.98); }
-        .generate-btn:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; }
-
-        /* --- RESULT AREA --- */
-        .result-area {
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .image-card {
-            background: var(--surface-color);
-            border-radius: var(--radius-md);
-            padding: 15px;
-            width: 100%;
-            max-width: 600px;
-            border: 1px solid rgba(255,255,255,0.05);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            animation: fadeIn 0.5s ease-out forwards;
-            display: none; /* Disembunyikan sampai ada hasil */
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .img-wrapper {
-            width: 100%;
-            border-radius: 12px;
             overflow: hidden;
-            background: #000;
-            position: relative;
-            min-height: 300px;
         }
 
-        .img-wrapper img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .action-row {
+        /* --- TOP NAVBAR --- */
+        .header {
+            height: 56px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-top: 15px;
-            padding: 0 5px;
+            padding: 0 16px;
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-base);
+            flex-shrink: 0;
         }
 
-        .prompt-result-text {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-            text-align: left;
-            max-width: 70%;
-            line-height: 1.4;
+        .logo {
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .download-btn {
-            background: rgba(255,255,255,0.1);
-            color: white;
-            border: 1px solid rgba(255,255,255,0.2);
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
+        .logo-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-white);
+            border-radius: 2px;
+        }
+
+        .top-tabs {
+            display: flex;
+            gap: 15px;
+        }
+
+        .top-tabs span {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .top-tabs span.active {
+            color: var(--text-primary);
+        }
+
+        /* --- MAIN WORKSPACE (MOBILE LAYOUT) --- */
+        .workspace {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            height: calc(100vh - 56px);
+        }
+
+        /* --- CANVAS AREA (TOP HALF) --- */
+        .canvas-area {
+            flex: 1;
+            background-color: #050505;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .canvas-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        .placeholder {
+            color: #333;
+            font-size: 13px;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .placeholder svg {
+            width: 32px;
+            height: 32px;
+            opacity: 0.5;
+        }
+
+        .result-image {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        /* Loader Krea Style */
+        .loading-bar-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: transparent;
+            display: none;
+        }
+
+        .loading-bar {
+            height: 100%;
+            width: 30%;
+            background: #fff;
+            animation: loadingSwipe 1s infinite ease-in-out;
+        }
+
+        @keyframes loadingSwipe {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(400%); }
+        }
+
+        /* Floating Actions on Canvas */
+        .canvas-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+            display: none;
+        }
+
+        .icon-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+        }
+
+        /* --- CONTROL AREA (BOTTOM HALF) --- */
+        .controls-area {
+            height: 45vh; /* Takes roughly bottom half on mobile */
+            background-color: var(--bg-panel);
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        /* Sub-Tabs (Txt2Img / Img2Img) */
+        .sub-tabs {
+            display: flex;
+            background: var(--bg-input);
+            border-radius: 8px;
+            padding: 4px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .sub-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-radius: 6px;
             cursor: pointer;
             transition: 0.2s;
         }
-        .download-btn:hover { background: white; color: black; }
 
-        /* --- LOADING SPINNER --- */
-        .loader {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            margin: 40px 0;
+        .sub-tab.active {
+            background: #2a2a2a;
+            color: var(--text-primary);
         }
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255,255,255,0.1);
-            border-left-color: var(--accent-glow);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+
+        /* Prompt Input */
+        .prompt-container {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .prompt-input {
+            width: 100%;
+            height: 90px;
+            background-color: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            color: var(--text-primary);
+            font-size: 13px;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .prompt-input:focus {
+            border-color: #555;
+        }
+
+        /* Style Chips */
+        .styles-container {
             margin-bottom: 20px;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* FOOTER */
-        footer {
-            margin-top: auto;
-            padding: 30px;
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            text-align: center;
+        
+        .styles-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
         }
+
+        .styles-scroll {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            scrollbar-width: none; /* Hide scrollbar Firefox */
+        }
+        .styles-scroll::-webkit-scrollbar { display: none; } /* Hide scrollbar Chrome */
+
+        .style-chip {
+            padding: 6px 12px;
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .style-chip.active {
+            background: var(--accent-white);
+            color: #000;
+            border-color: var(--accent-white);
+        }
+
+        /* Generate Button */
+        .btn-generate {
+            width: 100%;
+            padding: 14px;
+            background-color: var(--accent-white);
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-generate:active { transform: scale(0.98); }
+        .btn-generate:disabled {
+            background-color: #333;
+            color: #666;
+            cursor: not-allowed;
+        }
+
+        /* Message for unavailable features */
+        .coming-soon-panel {
+            display: none;
+            height: 100%;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 20px;
+        }
+        
+        .coming-soon-panel h3 { color: var(--text-primary); margin-bottom: 10px; font-size: 16px; }
+        .coming-soon-panel p { font-size: 13px; line-height: 1.5; }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="logo">Risyadh AI</div>
-    </nav>
+    <header class="header">
+        <div class="logo">
+            <div class="logo-dot"></div>
+            RISYADH.AI
+        </div>
+        <div class="top-tabs">
+            <span class="active" onclick="switchMainTab('generate', this)">Generate</span>
+            <span onclick="switchMainTab('enhance', this)">Enhance</span>
+            <span onclick="switchMainTab('video', this)">Video</span>
+        </div>
+    </header>
 
-    <div class="container">
+    <div class="workspace">
         
-        <div class="header-text">
-            <h1>Create anything.</h1>
-            <p>Ubah imajinasimu menjadi karya seni visual yang menakjubkan.</p>
-        </div>
+        <main class="canvas-area">
+            <div class="canvas-wrapper">
+                
+                <div id="placeholder" class="placeholder">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    Realtime Canvas
+                </div>
 
-        <div class="prompt-box">
-            <input type="text" id="promptInput" class="prompt-input" placeholder="Deskripsikan gambar... (cth: a futuristic cyberpunk city at night, 8k resolution)" autocomplete="off">
-            <button id="generateBtn" class="generate-btn" onclick="generateImage()">
-                Generate ✨
-            </button>
-        </div>
+                <img id="resultImage" class="result-image" alt="Output">
 
-        <div class="result-area">
-            <div id="loading" class="loader">
-                <div class="spinner"></div>
-                <p style="color: var(--text-muted);">AI sedang melukis imajinasimu...</p>
+                <div id="loadingBar" class="loading-bar-container">
+                    <div class="loading-bar"></div>
+                </div>
+
+                <div id="canvasActions" class="canvas-actions">
+                    <button class="icon-btn" onclick="downloadImage()" title="Download">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+
+        <aside class="controls-area" id="controlsPanel">
+            
+            <div class="sub-tabs">
+                <div class="sub-tab active" onclick="switchSubTab('txt2img', this)">Text to Image</div>
+                <div class="sub-tab" onclick="switchSubTab('img2img', this)">Image to Image</div>
             </div>
 
-            <div id="imageCard" class="image-card">
-                <div class="img-wrapper">
-                    <img id="generatedImg" src="" alt="AI Generated Artwork">
+            <div id="txt2imgPanel">
+                <div class="prompt-container">
+                    <textarea id="promptInput" class="prompt-input" placeholder="Type a prompt... (e.g., A cinematic shot of a futuristic cyberpunk city)"></textarea>
                 </div>
-                <div class="action-row">
-                    <div id="resultPrompt" class="prompt-result-text"></div>
-                    <button class="download-btn" onclick="downloadImage()">Download HD</button>
+
+                <div class="styles-container">
+                    <div class="styles-label">AI STYLES</div>
+                    <div class="styles-scroll">
+                        <div class="style-chip active" onclick="selectStyle(this, '')">None</div>
+                        <div class="style-chip" onclick="selectStyle(this, ', cinematic lighting, ultra realistic, 8k')">Cinematic</div>
+                        <div class="style-chip" onclick="selectStyle(this, ', studio ghibli anime style, highly detailed masterpiece')">Anime</div>
+                        <div class="style-chip" onclick="selectStyle(this, ', 3d blender render, unreal engine 5, octane render')">3D Render</div>
+                        <div class="style-chip" onclick="selectStyle(this, ', dark fantasy concept art, grimdark, trending on artstation')">Dark Fantasy</div>
+                    </div>
                 </div>
+
+                <button id="generateBtn" class="btn-generate" onclick="startGeneration()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                    Generate
+                </button>
             </div>
-        </div>
+
+            <div id="img2imgPanel" style="display:none; text-align:center; padding: 20px 0;">
+                <p style="font-size:12px; color:#888; margin-bottom:15px;">Upload a base image to guide the AI</p>
+                <button class="btn-generate" style="background:#222; color:#fff;" onclick="alert('Fitur Upload Image akan segera hadir!')">
+                    + Upload Image
+                </button>
+            </div>
+
+        </aside>
+
+        <aside class="controls-area coming-soon-panel" id="comingSoonPanel">
+            <h3>Development Stage</h3>
+            <p>Fitur <span id="featureName" style="color:var(--text-primary); font-weight:bold;"></span> membutuhkan server GPU khusus. Fitur ini sedang dalam tahap pengembangan oleh Risyadh.</p>
+        </aside>
 
     </div>
 
-    <footer>
-        <p>Engineered by Risyadh • Powered by Pollinations AI</p>
-    </footer>
-
     <script>
-        // Jalankan dengan tombol Enter
-        document.getElementById("promptInput").addEventListener("keypress", function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault();
-                generateImage();
+        // Tab Management Logic
+        function switchMainTab(tab, element) {
+            // Update active styling
+            document.querySelectorAll('.top-tabs span').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+
+            const controlsPanel = document.getElementById('controlsPanel');
+            const comingSoonPanel = document.getElementById('comingSoonPanel');
+            const featureName = document.getElementById('featureName');
+
+            if (tab === 'generate') {
+                controlsPanel.style.display = 'flex';
+                comingSoonPanel.style.display = 'none';
+            } else {
+                controlsPanel.style.display = 'none';
+                comingSoonPanel.style.display = 'flex';
+                featureName.innerText = tab === 'enhance' ? 'AI Enhance (Upscale)' : 'AI Video Generation';
             }
-        });
-
-        // Simpan URL gambar yang sedang aktif untuk di-download
-        let currentImageUrl = "";
-
-        function generateImage() {
-            const prompt = document.getElementById('promptInput').value.trim();
-            const btn = document.getElementById('generateBtn');
-            const loader = document.getElementById('loading');
-            const imageCard = document.getElementById('imageCard');
-            const imgElement = document.getElementById('generatedImg');
-            const promptText = document.getElementById('resultPrompt');
-
-            if (!prompt) return alert("Tolong ketikkan deskripsi gambar terlebih dahulu.");
-
-            // Reset & Tampilkan Loading
-            btn.disabled = true;
-            btn.innerHTML = "Generating...";
-            imageCard.style.display = "none";
-            loader.style.display = "flex";
-
-            // Rahasia Utama: Menembak Pollinations AI secara langsung.
-            // Tambahkan seed acak agar jika kita mengetik prompt yang sama, hasilnya tetap berbeda.
-            const randomSeed = Math.floor(Math.random() * 1000000);
-            const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true&seed=${randomSeed}`;
-            
-            currentImageUrl = imageUrl;
-
-            // Kita memanipulasi event 'onload' pada gambar untuk mengetahui kapan AI selesai merender
-            imgElement.src = imageUrl;
-
-            imgElement.onload = function() {
-                // Gambar selesai di-render oleh AI
-                loader.style.display = "none";
-                promptText.innerText = `"${prompt}"`;
-                imageCard.style.display = "block";
-                
-                btn.disabled = false;
-                btn.innerHTML = "Generate ✨";
-            };
-
-            imgElement.onerror = function() {
-                // Jika terjadi gagal muat
-                loader.style.display = "none";
-                alert("Gagal merender gambar. Coba deskripsi yang lain.");
-                btn.disabled = false;
-                btn.innerHTML = "Generate ✨";
-            };
         }
 
-        // Fungsi Download Gambar
-        async function downloadImage() {
-            if (!currentImageUrl) return;
+        function switchSubTab(tab, element) {
+            document.querySelectorAll('.sub-tab').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
 
-            try {
-                // Tarik data gambar (Blob) untuk menghindari block browser saat mendownload
-                const response = await fetch(currentImageUrl);
-                const blob = await response.blob();
-                
-                const blobUrl = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = blobUrl;
-                link.download = `Risyadh_AI_Art_${Date.now()}.jpg`;
-                
-                document.body.appendChild(link);
-                link.click();
-                
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(blobUrl);
-            } catch (err) {
-                // Fallback jika fetch terblokir: Buka gambar di tab baru
-                window.open(currentImageUrl, '_blank');
+            document.getElementById('txt2imgPanel').style.display = tab === 'txt2img' ? 'block' : 'none';
+            document.getElementById('img2imgPanel').style.display = tab === 'img2img' ? 'block' : 'none';
+        }
+
+        // Style Selection Logic
+        let currentStyleModifier = "";
+        function selectStyle(element, styleText) {
+            document.querySelectorAll('.style-chip').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            currentStyleModifier = styleText;
+        }
+
+        // Generate Logic
+        let currentImageBlob = null;
+
+        function startGeneration() {
+            const prompt = document.getElementById('promptInput').value.trim();
+            const btn = document.getElementById('generateBtn');
+            const placeholder = document.getElementById('placeholder');
+            const loader = document.getElementById('loadingBar');
+            const img = document.getElementById('resultImage');
+            const actions = document.getElementById('canvasActions');
+
+            if (!prompt) {
+                alert("Tolong ketikkan prompt terlebih dahulu.");
+                return;
             }
+
+            // UI State: Loading
+            btn.disabled = true;
+            btn.innerHTML = "Generating...";
+            placeholder.style.display = "none";
+            img.style.display = "none";
+            img.style.opacity = "0";
+            actions.style.display = "none";
+            loader.style.display = "block";
+
+            // Menggabungkan Prompt user + Style Chip yang dipilih
+            const finalPrompt = prompt + currentStyleModifier;
+            const seed = Math.floor(Math.random() * 1000000); 
+            
+            // Pollinations AI API (Direct render)
+            const aiUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(finalPrompt)}?width=768&height=768&seed=${seed}&nologo=true`;
+
+            fetch(aiUrl)
+                .then(response => {
+                    if(!response.ok) throw new Error("Gagal terhubung ke server AI");
+                    return response.blob();
+                })
+                .then(blob => {
+                    currentImageBlob = blob;
+                    const objectURL = URL.createObjectURL(blob);
+                    
+                    img.src = objectURL;
+                    
+                    img.onload = () => {
+                        loader.style.display = "none";
+                        img.style.display = "block";
+                        // Efek Fade-in
+                        setTimeout(() => { img.style.opacity = "1"; }, 50); 
+                        
+                        actions.style.display = "flex";
+                        btn.disabled = false;
+                        btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Generate`;
+                    };
+                })
+                .catch(error => {
+                    alert("Proses gagal. Silakan coba lagi.");
+                    loader.style.display = "none";
+                    placeholder.style.display = "flex";
+                    btn.disabled = false;
+                    btn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> Generate`;
+                });
+        }
+
+        // Download Logic
+        function downloadImage() {
+            if (!currentImageBlob) return;
+            
+            const url = URL.createObjectURL(currentImageBlob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `Risyadh_AI_${Date.now()}.png`;
+            document.body.appendChild(a);
+            a.click();
+            
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
         }
     </script>
 </body>
